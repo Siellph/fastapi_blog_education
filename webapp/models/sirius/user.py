@@ -13,5 +13,5 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, unique=True)
     hashed_password: Mapped[str] = mapped_column(String)
     email: Mapped[str] = mapped_column(String, unique=True)
-    role: Mapped[str] = mapped_column(String) 
+    role: Mapped[str] = mapped_column(String)
     additional_info: Mapped[dict] = mapped_column(JSONB)

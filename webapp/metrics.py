@@ -36,7 +36,6 @@ DEFAULT_BUCKETS = (
 )
 
 
-
 # TODO in middleware
 # prometheus_client.Counter(
 #     'sirius_deps_latency_seconds',
@@ -52,6 +51,7 @@ DEPS_LATENCY = prometheus_client.Histogram(
     ['endpoint'],
     buckets=DEFAULT_BUCKETS,
 )
+
 
 def metrics(request: Request) -> Response:
     if 'prometheus_multiproc_dir' in os.environ:

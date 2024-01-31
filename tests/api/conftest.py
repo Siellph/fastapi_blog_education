@@ -82,6 +82,7 @@ async def _common_api_fixture(
 ) -> None:
     return
 
+
 @pytest.fixture()
 async def _common_api_with_kafka_fixture(
     _common_api_fixture: FixtureFunctionT,
