@@ -1,12 +1,9 @@
-from typing import List, TYPE_CHECKING
+import datetime
 
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from webapp.models.meta import DEFAULT_SCHEMA, Base
-
-if TYPE_CHECKING:
-    from webapp.models.sirius.user import User
 
 
 class File(Base):
@@ -14,12 +11,12 @@ class File(Base):
     __table_args__ = ({'schema': DEFAULT_SCHEMA},)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    lesson_id: Mapped[int] = mapped_column(Integer, ForeignKey(f'{DEFAULT_SCHEMA}.lesson.id', ondelete='CASCADE'))
+    type: Mapped[str] = mapped_column(String)
+    description: Mapped[str] = mapped_column(Text)
+    minio_path: Mapped[str] = mapped_column(String)
+    content_type: Mapped[str] = mapped_column(String)
+    size: Mapped[int] = mapped_column(Integer)
+    uploaded_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
-    url: Mapped[str] = mapped_column(Text)
-    task_id: Mapped[str] = mapped_column(String)
-
-    users: Mapped[List['User']] = relationship(
-        'User',
-        secondary=f'{DEFAULT_SCHEMA}.user_file',
-        back_populates='files',
-    )
+    lesson = relationship('Lesson', back_populates='files')
