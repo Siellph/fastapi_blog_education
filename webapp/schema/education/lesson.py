@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-if TYPE_CHECKING:
-    from webapp.schema.file.file import FileRead
+from webapp.schema.file.file import FileRead
 
 
 class Lesson(BaseModel):
