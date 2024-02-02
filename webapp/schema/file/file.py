@@ -12,7 +12,9 @@ class File(BaseModel):
 
 
 class FileCreate(File):
-    lesson_id: int = Field(..., example=1, description='The ID of the lesson this file is associated with.')
+    pass
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FileRead(File):

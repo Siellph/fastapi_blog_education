@@ -1,7 +1,10 @@
+from typing import List
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 
+from webapp.models.sirius.subscribe import Subscription
 from webapp.models.sirius.user import User as SQLAUser
 from webapp.schema.login.user import UserCreate, UserLogin, UserRead
 from webapp.utils.auth.password import hash_password
@@ -43,13 +46,20 @@ async def get_user(session: AsyncSession, user_info: UserLogin) -> SQLAUser | No
 
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> UserRead | None:
-    result = await session.execute(
-        select(SQLAUser).where(SQLAUser.id == user_id).options(joinedload(SQLAUser.subscriptions))
-    )
+    result = await session.execute(select(SQLAUser).where(SQLAUser.id == user_id))
     user = result.scalars().first()
     if user:
         return UserRead.model_validate(user)
     return None
+
+
+async def get_course_subscribers(session: AsyncSession, course_id: int) -> List[UserRead] | None:
+    subscriber_ids_subquery = select(Subscription.user_id).where(Subscription.course_id == course_id).subquery()
+    users = await session.execute(
+        select(SQLAUser).where(SQLAUser.id.in_(subscriber_ids_subquery)).options(selectinload(SQLAUser.subscriptions))
+    )
+    users = users.scalars().all()
+    return [UserRead.model_validate(user) for user in users]
 
 
 async def delete_user(session: AsyncSession, user_id: int) -> bool:

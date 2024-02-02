@@ -6,12 +6,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from webapp.api.login.router import user_router
-from webapp.crud.subscribe import get_subscriptions_for_user
+from webapp.crud.course import CourseRead, get_courses_subscription
 from webapp.crud.user import create_user, delete_user, get_user_by_id, update_user
 from webapp.db.postgres import get_session
-from webapp.schema.education.subscribe import Subscription
 from webapp.schema.login.user import UserCreate, UserRead
 from webapp.utils.auth.jwt import JwtTokenT, jwt_auth
+
+
+async def get_courses_by_user_subscription(
+    user_id: int,
+    session: AsyncSession,
+    current_user: JwtTokenT,
+):
+    courses = await get_courses_subscription(session=session, user_id=user_id)
+    if courses:
+        return courses
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Подписок не найдено')
 
 
 @user_router.post('/', response_model=UserRead, tags=['Users'], response_class=ORJSONResponse)
@@ -54,15 +64,24 @@ async def get_user_by_id_endpoint(
     return await get_user_by_id(session=session, user_id=user_id)
 
 
+@user_router.get('/me/subscriptions/', response_model=List[CourseRead], tags=['Users'], response_class=ORJSONResponse)
+async def get_courses_by_user_me_subscription(
+    session: AsyncSession = Depends(get_session),
+    current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
+):
+    user_id = current_user['user_id']
+    return await get_courses_by_user_subscription(user_id=user_id, session=session, current_user=current_user)
+
+
 @user_router.get(
-    '/{user_id}/subscriptions/', response_model=List[Subscription], tags=['Users'], response_class=ORJSONResponse
+    '/{user_id}/subscriptions/', response_model=List[CourseRead], tags=['Users'], response_class=ORJSONResponse
 )
-async def get_user_subscriptions_endpoint(
+async def get_courses_by_user_id_subscription(
     user_id: int,
     session: AsyncSession = Depends(get_session),
     current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
 ):
-    return await get_subscriptions_for_user(session=session, user_id=user_id)
+    return await get_courses_by_user_subscription(user_id=user_id, session=session, current_user=current_user)
 
 
 @user_router.delete('/{user_id}', status_code=status.HTTP_204_NO_CONTENT, tags=['Users'])

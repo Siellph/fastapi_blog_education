@@ -15,8 +15,7 @@ async def create_subscription_endpoint(
     current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
 ):
     try:
-        new_subscription = await create_subscription(session, user_id, course_id)
-        return new_subscription
+        return await create_subscription(session, user_id, course_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

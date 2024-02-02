@@ -4,7 +4,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from webapp.api.education.router import course_router, subscribe_router
+from webapp.api.education.router import course_router, lesson_router, subscribe_router
 from webapp.api.login.router import auth_router, user_router
 from webapp.metrics import metrics
 from webapp.on_shutdown import stop_producer
@@ -31,6 +31,7 @@ def setup_routers(app: FastAPI) -> None:
     app.include_router(user_router)
     app.include_router(subscribe_router)
     app.include_router(course_router)
+    app.include_router(lesson_router)
 
 
 @asynccontextmanager
