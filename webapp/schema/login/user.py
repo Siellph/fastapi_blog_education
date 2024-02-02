@@ -29,6 +29,8 @@ class UserLoginResponse(BaseModel):
 class UserCreate(User):
     password: str = Field(..., example='newpassword')
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class UserRead(User):
     id: int = Field(..., example=1)
