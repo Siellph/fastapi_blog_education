@@ -72,6 +72,7 @@ async def delete_user_endpoint(
     current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
 ):
     # Предполагается, что операцию может выполнить только администратор
+    print(current_user)
     if current_user['role'] == 'admin':
-        await delete_user(session=session, user_id=user_id)
+        return await delete_user(session=session, user_id=user_id)
     raise HTTPException(status_code=403, detail='Нет доступа для выполнения этой операции')

@@ -7,7 +7,7 @@ from webapp.schema.education.course import CourseCreate, CourseRead
 
 
 async def create_course(session: AsyncSession, course_data: CourseCreate) -> CourseRead:
-    new_course = Course(**course_data.model_dump_json())
+    new_course = Course(**course_data.model_dump())
     session.add(new_course)
     await session.commit()
     await session.refresh(new_course)

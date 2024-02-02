@@ -17,13 +17,18 @@ from webapp.utils.auth.jwt import JwtTokenT, jwt_auth
 
 @course_router.post(
     '/',
-    response_model=CourseCreate,
+    response_model=CourseRead,
     status_code=status.HTTP_201_CREATED,
     tags=['Courses'],
     response_class=ORJSONResponse,
 )
-async def create_course_endpoint(course_data: CourseCreate, session: AsyncSession = Depends(get_session)):
-    return await create_course(session=session, course_data=course_data)
+async def create_course_endpoint(
+    course_data: CourseCreate,
+    session: AsyncSession = Depends(get_session),
+    current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
+):
+    if current_user['role'] == 'admin' or 'teacher':
+        return await create_course(session=session, course_data=course_data)
 
 
 @course_router.get('/{course_id}', response_model=CourseRead, tags=['Courses'], response_class=ORJSONResponse)
@@ -62,7 +67,9 @@ async def update_course_endpoint(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
-@course_router.get('/{course_id}/subscriptions', response_model=List[Subscription], response_class=ORJSONResponse)
+@course_router.get(
+    '/{course_id}/subscribers', response_model=List[Subscription], response_class=ORJSONResponse, tags=['Courses']
+)
 async def get_course_subscribers_endpoint(
     course_id: int,
     session: AsyncSession = Depends(get_session),
