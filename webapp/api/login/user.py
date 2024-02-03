@@ -24,7 +24,7 @@ async def get_courses_by_user_subscription(
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Подписок не найдено')
 
 
-@user_router.post('/', response_model=UserRead, tags=['Users'], response_class=ORJSONResponse)
+@user_router.post('/signup', response_model=UserRead, tags=['Users'], response_class=ORJSONResponse)
 async def create_user_endpoint(
     user_data: UserCreate,
     session: AsyncSession = Depends(get_session),
