@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -15,8 +15,16 @@ async def create_lesson(session: AsyncSession, course_id: int, lesson_data: Less
     return LessonRead.model_validate(new_lesson)
 
 
-async def get_lessons_all_by_course_id(session: AsyncSession, course_id: int) -> List[LessonRead] | None:
-    result = await session.execute(select(Lesson).where(Lesson.course_id == course_id))
+async def get_lessons_all_by_course_id(
+    session: AsyncSession,
+    course_id: int,
+    page: int = 1,
+    page_size: int = 10,
+) -> Optional[List[LessonRead]]:
+    # Рассчитываем смещение на основе номера страницы и размера страницы
+    offset = (page - 1) * page_size
+    # Выполняем запрос с учетом смещения и лимита
+    result = await session.execute(select(Lesson).where(Lesson.course_id == course_id).offset(offset).limit(page_size))
     all_lessons = result.scalars().all()
     if all_lessons:
         return [LessonRead.model_validate(lesson) for lesson in all_lessons]
