@@ -10,6 +10,8 @@ python scripts/load_data.py fixture/sirius/sirius.user.json
 python scripts/load_data.py fixture/sirius/sirius.course.json
 python scripts/load_data.py fixture/sirius/sirius.lesson.json
 python scripts/load_data.py fixture/sirius/sirius.file.json
+python scripts/load_data.py fixture/sirius/sirius.subscription.json
+
 
 
 
