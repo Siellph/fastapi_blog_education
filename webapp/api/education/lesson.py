@@ -95,7 +95,7 @@ async def get_lesson_endpoint(
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@lesson_router.put('/{lesson_id}', response_model=LessonRead, tags=['Lessons'])
+@lesson_router.put('/{lesson_id}', response_model=LessonRead, tags=['Lessons'], response_class=ORJSONResponse)
 async def update_lesson_endpoint(
     course_id: int,
     lesson_id: int,
@@ -104,21 +104,25 @@ async def update_lesson_endpoint(
     current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
     redis: Redis = Depends(get_redis),
 ):
-    if current_user['role'] not in ['admin', 'teacher']:
-        raise HTTPException(status_code=403, detail='Нет доступа для выполнения этой операции')
-    try:
-        updated_lesson = await update_lesson(
-            session=session, course_id=course_id, lesson_id=lesson_id, lesson_data=lesson_data
-        )
-        if updated_lesson is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Урок не найден')
+    if current_user['role'] in ['admin', 'teacher']:
+        try:
+            response = await update_lesson(
+                session=session, course_id=course_id, lesson_id=lesson_id, lesson_data=lesson_data
+            )
+            if response is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Урок не найден')
 
-        lesson_cache_key = get_lesson_cache_key(lesson_id)
-        await redis.delete(lesson_cache_key)
+            cache_key = get_lesson_cache_key(lesson_id)
+            if cache_key:
+                await redis.delete(cache_key)
 
-        return updated_lesson
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+            await redis.set(cache_key, response.json(), ex=3600)
+
+            return response
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Недостаточно прав')
 
 
 @lesson_router.delete('/{lesson_id}', status_code=status.HTTP_204_NO_CONTENT, tags=['Lessons'])
@@ -136,11 +140,8 @@ async def delete_lesson_endpoint(
         if not result:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Урок не найден')
 
-        lesson_cache_key = get_lesson_cache_key(lesson_id)
-        await redis.delete(lesson_cache_key)
-
-        cache_key_pattern = f'course:{course_id}:lessons:*'
-        await redis.delete(*await redis.keys(cache_key_pattern))
+        cache_key = get_lesson_cache_key(lesson_id)
+        await redis.delete(cache_key)
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

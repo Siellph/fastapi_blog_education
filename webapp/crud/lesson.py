@@ -48,8 +48,21 @@ async def update_lesson(
         for var, value in lesson_data.dict(exclude_unset=True).items():
             setattr(lesson, var, value)
         await session.commit()
-        await session.refresh(lesson, attribute_names=['files'])
-        return LessonRead.model_validate(lesson)
+        await session.refresh(lesson)
+
+        # Преобразование данных из объекта SQLAlchemy в словарь
+        lesson_dict = {
+            'id': lesson.id,
+            'course_id': lesson.course_id,
+            'title': lesson.title,
+            'content': lesson.content,
+            'order': lesson.order,
+            'uploaded_at': lesson.uploaded_at,
+        }
+
+        # Создание экземпляра модели Pydantic из словаря
+        lesson_read = LessonRead(**lesson_dict)
+        return lesson_read
     return None
 
 

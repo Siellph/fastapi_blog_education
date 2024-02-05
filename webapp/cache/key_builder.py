@@ -1,10 +1,6 @@
 from conf.config import settings
 
 
-def get_user_cache_key(user_id: int) -> str:
-    return f'{settings.REDIS_SIRIUS_CACHE_PREFIX}:user:{user_id}'
-
-
 def get_course_cache_key(course_id: int) -> str:
     return f'{settings.REDIS_SIRIUS_CACHE_PREFIX}:course:{course_id}'
 
