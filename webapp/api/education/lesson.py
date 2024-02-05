@@ -22,7 +22,7 @@ from webapp.schema.education.lesson import LessonCreate, LessonRead
 from webapp.utils.auth.jwt import JwtTokenT, jwt_auth
 
 
-@lesson_router.post('/', response_model=LessonRead, tags=['Lessons'])
+@lesson_router.post('/', response_model=LessonRead, tags=['Lessons'], status_code=status.HTTP_201_CREATED)
 async def create_lesson_endpoint(
     course_id: int,
     lesson_data: LessonCreate,
@@ -115,9 +115,6 @@ async def update_lesson_endpoint(
 
         lesson_cache_key = get_lesson_cache_key(lesson_id)
         await redis.delete(lesson_cache_key)
-
-        cache_key_pattern = f'course:{course_id}:lessons:*'
-        await redis.delete(*await redis.keys(cache_key_pattern))
 
         return updated_lesson
     except Exception as e:

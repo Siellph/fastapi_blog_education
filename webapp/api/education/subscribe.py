@@ -7,6 +7,8 @@ from webapp.db.postgres import get_session
 from webapp.utils.auth.jwt import JwtTokenT, jwt_auth
 
 
+# С помощью данного функционала преподаватель или администратор может создать или удалить подписку
+# на курс любому пользователю
 @subscribe_router.post('/', status_code=status.HTTP_201_CREATED, tags=['Subscribe'])
 async def create_subscription_endpoint(
     user_id: int,

@@ -132,7 +132,7 @@ async def get_course_subscribers_endpoint(
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Подписчиков не найдено')
 
 
-@course_router.get('/{course_id}/subscribe', status_code=status.HTTP_201_CREATED, tags=['Courses'])
+@course_router.post('/{course_id}/subscribe', status_code=status.HTTP_201_CREATED, tags=['Courses'])
 async def get_course_subscribe_endpoint(
     course_id: int,
     session: AsyncSession = Depends(get_session),
