@@ -53,6 +53,7 @@ async def get_files_endpoint(
     lesson_id: int,
     page: int = Query(1, ge=1, description='Номер страницы'),
     page_size: int = Query(10, ge=1, le=100, description='Количество файлов на странице'),
+    current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
     session: AsyncSession = Depends(get_session),
     redis: Redis = Depends(get_redis),
 ):
@@ -74,7 +75,11 @@ async def get_files_endpoint(
 
 @file_router.get('/files/{file_id}', tags=['Files'])
 async def download_file_endpoint(
-    course_id: int, lesson_id: int, file_id: int, session: AsyncSession = Depends(get_session)
+    course_id: int,
+    lesson_id: int,
+    file_id: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
 ):
     try:
         file_record = await get_file_by_id(session, file_id)

@@ -5,10 +5,9 @@ URLS = {
     },
     'user': {
         'create_user': '/users/signup',
-        'get_put_del_user_by_id': '/users/{user_id}',
+        'get_put_user_by_id': '/users/{user_id}',
         'get_me': '/users/me',
         'get_my_subscriptions': '/users/me/subscriptions',
-        'get_user_subscriptions_by_id': '/users/{user_id}/subscriptions',
     },
     'course': {
         'get_post_courses': '/courses',

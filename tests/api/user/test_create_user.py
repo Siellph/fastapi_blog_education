@@ -14,6 +14,7 @@ FIXTURES_PATH = BASE_DIR / 'fixtures'
     (
         'username',
         'password',
+        'user_id',
         'username_create',
         'password_create',
         'email',
@@ -26,12 +27,27 @@ FIXTURES_PATH = BASE_DIR / 'fixtures'
         (
             'admin1',
             'qwerty',
-            'student22',
+            4,
+            'student',
             'qwerty',
-            'student22@example.com',
+            'student@example.com',
             'student',
             'Дмитрий Петров',
             status.HTTP_201_CREATED,
+            [
+                FIXTURES_PATH / 'sirius.user.json',
+            ],
+        ),
+        (
+            'student1',
+            'qwerty',
+            4,
+            'student',
+            'qwerty',
+            'student@example.com',
+            'student',
+            'Дмитрий Петров',
+            status.HTTP_403_FORBIDDEN,
             [
                 FIXTURES_PATH / 'sirius.user.json',
             ],
@@ -44,6 +60,7 @@ async def test_create_user(
     client: AsyncClient,
     username: str,
     password: str,
+    user_id: int,
     username_create: str,
     password_create: str,
     email: str,
@@ -60,6 +77,7 @@ async def test_create_user(
             'email': email,
             'password': password_create,
             'username': username_create,
+            'id': user_id,
         },
         headers={'Authorization': f'Bearer Bearer {access_token}'},
     )
@@ -67,7 +85,8 @@ async def test_create_user(
     assert response.status_code == expected_status
     if response.status_code == 201:
         response_data = response.json()
+        assert response_data['id'] == user_id
         assert response_data['additional_info']['full_name'] == full_name
         assert response_data['role'] == role
         assert response_data['email'] == email
-        assert response_data['username_create'] == username_create
+        assert response_data['username'] == username_create

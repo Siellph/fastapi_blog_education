@@ -41,6 +41,7 @@ class UserLoginResponse(BaseModel):
 
 
 class UserCreate(User):
+    id: Optional[int]
     password: str
 
     model_config = ConfigDict(
