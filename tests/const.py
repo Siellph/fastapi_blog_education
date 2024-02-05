@@ -20,4 +20,9 @@ URLS = {
         'get_post_lessons': '/courses/{course_id}/lessons',
         'get_put_del_lesson_by_id': '/courses/{course_id}/lessons/{lesson_id}',
     },
+    'file': {
+        'upload': '/courses/{course_id}/lessons/{lesson_id}/upload',
+        'all_files_by_lesson': '/courses/{course_id}/lessons/{lesson_id}/files',
+        'get_del_file_by_id': '/courses/{course_id}/lessons/{lesson_id}/files/{file_id}',
+    },
 }

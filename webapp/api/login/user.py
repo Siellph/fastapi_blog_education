@@ -28,13 +28,13 @@ async def create_user_endpoint(
     current_user: JwtTokenT = Depends(jwt_auth.get_current_user),
 ):
     if current_user['role'] == 'admin':
-        return await create_user(session=session, user_data=user_data)
-    raise HTTPException(status_code=403, detail='Нет доступа для выполнения этой операции')
-    try:
+        # try:
         user = await create_user(session=session, user_data=user_data)
         return user
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        # except Exception as e:
+        #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    else:
+        return HTTPException(status_code=403, detail='Нет доступа для выполнения этой операции')
 
 
 @user_router.put('/{user_id}', response_model=UserRead, tags=['Users'], response_class=ORJSONResponse)

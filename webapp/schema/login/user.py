@@ -9,19 +9,6 @@ class User(BaseModel):
     role: Optional[str]
     additional_info: Optional[dict]
 
-    model_config = {
-        'json_schema_extra': {
-            'examples': [
-                {
-                    'username': 'user',
-                    'email': 'user@example.com',
-                    'role': 'admin',
-                    'additional_info': {'full_name': 'Дмитрий Петров'},
-                }
-            ]
-        }
-    }
-
 
 class UserLogin(BaseModel):
     username: str
@@ -56,10 +43,32 @@ class UserLoginResponse(BaseModel):
 class UserCreate(User):
     password: str
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            'examples': [
+                {
+                    'username': 'user',
+                    'email': 'user@example.com',
+                    'role': 'admin',
+                    'additional_info': {'full_name': 'Дмитрий Петров'},
+                    'password': 'qwerty',
+                }
+            ]
+        },
+    )
 
 
 class UserRead(User):
     id: int
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            'examples': [
+                {
+                    'id': 1,
+                }
+            ]
+        },
+    )
