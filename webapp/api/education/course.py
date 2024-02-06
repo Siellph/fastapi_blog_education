@@ -49,12 +49,16 @@ async def get_all_courses_endpoint(
     cache_key = get_courses_page_cache_key(page, page_size)
     cached_courses = await redis.get(cache_key)
     if cached_courses:
+        if cached_courses == b'[]':
+            return []
         return orjson.loads(cached_courses)
     else:
         try:
             courses = await get_courses_all(session=session, page=page, page_size=page_size)
             if courses:
-                await redis.set(cache_key, orjson.dumps([course.dict() for course in courses]), ex=3600)  # Кэш на 1 час
+                await redis.set(cache_key, orjson.dumps([course.dict() for course in courses]), ex=3600)
+            else:
+                await redis.set(cache_key, b'[]', ex=3600)
             return courses
         except SQLAlchemyError as e:
             raise HTTPException(
@@ -74,15 +78,19 @@ async def get_course_endpoint(
     cached_course = await redis.get(cache_key)
 
     if cached_course:
+        if cached_course == b'{}':
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Курс не найден')
         return orjson.loads(cached_course)
     else:
         try:
             response = await get_course_by_id(session=session, course_id=course_id)
             if response is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Course not found')
-
-            await redis.set(cache_key, response.json(), ex=3600)
-
+                # Кешируем заполнитель для пустого ответа и возвращаем ошибку 404
+                await redis.set(cache_key, b'{}', ex=3600)
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Курс не найден')
+            else:
+                # Кешируем данные курса
+                await redis.set(cache_key, orjson.dumps(response.dict()), ex=3600)
             return response
         except SQLAlchemyError as e:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Database error') from e
@@ -106,8 +114,6 @@ async def update_course_endpoint(
 
             cache_key = get_course_cache_key(course_id)
             await redis.delete(cache_key)
-
-            await redis.set(cache_key, response.json(), ex=3600)
 
             return response
         except SQLAlchemyError as e:

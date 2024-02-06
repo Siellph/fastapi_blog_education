@@ -60,14 +60,17 @@ async def get_files_endpoint(
     cache_key = get_files_by_lesson_cache_key(course_id, lesson_id, page, page_size)
     cached_result = await redis.get(cache_key)
     if cached_result:
+        if cached_result == b'[]':
+            return []
         return orjson.loads(cached_result)
     try:
         result = await get_files_by_lesson_id(
             session=session, course_id=course_id, lesson_id=lesson_id, page=page, page_size=page_size
         )
         if not result:
+            await redis.set(cache_key, b'[]', ex=3600)
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Файлы не найдены')
-        await redis.set(cache_key, orjson.dumps([file.dict() for file in result]), ex=3600)  # Кэш на 1 час
+        await redis.set(cache_key, orjson.dumps([file.dict() for file in result]), ex=3600)
         return result
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
